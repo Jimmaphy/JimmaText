@@ -1,25 +1,17 @@
 #include <conio.h>
 #include <ctype.h>
-#include <stdio.h>
 #include <windows.h>
+#include <stdio.h>
 
 
 int main() {
     // Setup the variables
-    HANDLE hStdin;
-    DWORD result;
     int character;
-
-    // Get the handle to the standard input
-    hStdin = GetStdHandle(STD_INPUT_HANDLE);
 
     // Keep looping forever until EOF or q is entered
     while (1) {
-        // Wait for input with a timeout of 100ms
-        result = WaitForSingleObject(hStdin, 100);
-
-        // Check if the result is WAIT_OBJECT_0, if so, read the character
-        if (result == WAIT_OBJECT_0) {
+        // Check if a key has been pressed
+        if (_kbhit()) {
             // Read the character
             character = _getch();
 
@@ -28,7 +20,7 @@ int main() {
                 break;
             }
 
-            // Check if the character is printable
+            // Check if the character is a control character
             if (iscntrl(character)) {
                 // Print the character code
                 printf("Char code: %d\r\n", character);
@@ -37,8 +29,8 @@ int main() {
                 printf("Char code: %d (%c)\r\n", character, character);
             }
         } else {
-            // Print a message
-            printf("Waiting for input...\r\n");
+            // No key is pressed, wait for 100ms
+            Sleep(100);
         }
     }
 
