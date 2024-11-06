@@ -1,80 +1,46 @@
+#include <conio.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <windows.h>
 
 
-void saveOriginalConsoleMode(HANDLE hStdin, LPDWORD originalConsoleMode) {
-    // Get the current console mode and store it
-    GetConsoleMode(hStdin, originalConsoleMode);
-}
-
-void resetConsoleMode(HANDLE hStdin, DWORD originalConsoleMode) {
-    // Set the original console mode
-    SetConsoleMode(hStdin, originalConsoleMode);
-}
-
-void enableRawMode(HANDLE hStdin) {
-    // DWORD (32-bit unsigned integer) to store the console mode
-    DWORD mode;
-
-    // Get the current console mode and store it
-    GetConsoleMode(hStdin, &mode);
-
-    // Disable line input and echo input
-    // &= is a bitwise AND assignment operator
-    // ~ is a bitwise NOT operator
-    // Only ENABLE_ECHO_INPUT and ENABLE_LINE_INPUT bits are changed
-    mode &= ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT);
-
-    // Set the new console mode
-    SetConsoleMode(hStdin, mode);
-}
-
-void disableRawMode(HANDLE hStdin) {
-    // DWORD (32-bit unsigned integer) to store the console mode
-    DWORD mode;
-
-    // Get the current console mode and store it
-    GetConsoleMode(hStdin, &mode);
-
-    // Enable line input and echo input
-    // |= is a bitwise OR assignment operator
-    // ENABLE_ECHO_INPUT and ENABLE_LINE_INPUT bits are changed
-    mode |= (ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT);
-
-    // Set the new console mode
-    SetConsoleMode(hStdin, mode);
-}
-
 int main() {
     // Setup the variables
     HANDLE hStdin;
-    DWORD originalConsoleMode;
-    char c;
+    DWORD result;
+    int character;
 
     // Get the handle to the standard input
     hStdin = GetStdHandle(STD_INPUT_HANDLE);
 
-    // Save the original console mode
-    saveOriginalConsoleMode(hStdin, &originalConsoleMode);
+    // Keep looping forever until EOF or q is entered
+    while (1) {
+        // Wait for input with a timeout of 100ms
+        result = WaitForSingleObject(hStdin, 100);
 
-    // Enable raw mode
-    enableRawMode(hStdin);
+        // Check if the result is WAIT_OBJECT_0, if so, read the character
+        if (result == WAIT_OBJECT_0) {
+            // Read the character
+            character = _getch();
 
-    // Loop until the user presses 'q' or EOF is reached
-    while((c = getchar()) != EOF && c != 'q') {
-        // Check if the character is printable
-        if(iscntrl(c)) {
-            // Print the character code
-            printf("Char code: %d\n", c);
+            // Check if the character is 'q' or EOF, if so, stop
+            if (character == 'q' || character == EOF) {
+                break;
+            }
+
+            // Check if the character is printable
+            if (iscntrl(character)) {
+                // Print the character code
+                printf("Char code: %d\r\n", character);
+            } else {
+                // Print the code and the character
+                printf("Char code: %d (%c)\r\n", character, character);
+            }
         } else {
-            // Print the code and the character
-            printf("Char code: %d (%c)\n", c, c);
+            // Print a message
+            printf("Waiting for input...\r\n");
         }
     }
-
-    // Reset the console mode
-    resetConsoleMode(hStdin, originalConsoleMode);
 
     // The program has ended successfully
     return 0;
